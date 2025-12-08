@@ -50,8 +50,8 @@ const translations = {
     leisureFactorHint: "1 min study = X min leisure",
     loanInterestRate: "Loan Interest Rate (0% - 50%)",
     loanInterestHint: "Extra study required on loans",
-    maxDebtLimit: "Max Debt Limit (0 - 180 min)",
-    maxDebtHint: "Maximum study debt allowed",
+    maxDebtLimit: "Max Debt Limit (minutes)",
+    maxDebtHint: "Maximum study debt allowed (0 = unlimited)",
     save: "Save",
     reset: "Reset",
     settingsSaved: "✅ Settings saved successfully",
@@ -80,7 +80,7 @@ const translations = {
     minToRepay: "min to repay",
 
     // Messages
-    notEnoughLeisure: "⚠️ Not enough leisure time",
+    notEnoughLeisure: "⚠️ Need at least 1 min (you have {0} min)",
     sessionTooShort: "⚠️ Session too short (min 1 min)",
     earnedLeisure: "✅ Earned {0} min leisure",
     debtPaid: "({0} min debt paid)",
@@ -127,8 +127,8 @@ const translations = {
     leisureFactorHint: "1 min estudio = X min ocio",
     loanInterestRate: "Tasa de Interés (0% - 50%)",
     loanInterestHint: "Estudio extra requerido en préstamos",
-    maxDebtLimit: "Límite de Deuda (0 - 180 min)",
-    maxDebtHint: "Deuda máxima de estudio permitida",
+    maxDebtLimit: "Límite de Deuda (minutos)",
+    maxDebtHint: "Deuda máxima permitida (0 = ilimitado)",
     save: "Guardar",
     reset: "Restablecer",
     settingsSaved: "✅ Configuración guardada",
@@ -157,7 +157,7 @@ const translations = {
     minToRepay: "min a pagar",
 
     // Messages
-    notEnoughLeisure: "⚠️ No hay suficiente tiempo de ocio",
+    notEnoughLeisure: "⚠️ Necesitas al menos 1 min (tienes {0} min)",
     sessionTooShort: "⚠️ Sesión muy corta (mín 1 min)",
     earnedLeisure: "✅ Ganaste {0} min de ocio",
     debtPaid: "({0} min de deuda pagada)",
@@ -204,8 +204,8 @@ const translations = {
     leisureFactorHint: "1 min étude = X min loisir",
     loanInterestRate: "Taux d'Intérêt (0% - 50%)",
     loanInterestHint: "Étude supplémentaire sur les prêts",
-    maxDebtLimit: "Limite de Dette (0 - 180 min)",
-    maxDebtHint: "Dette d'étude maximale autorisée",
+    maxDebtLimit: "Limite de Dette (minutes)",
+    maxDebtHint: "Dette maximale autorisée (0 = illimité)",
     save: "Sauvegarder",
     reset: "Réinitialiser",
     settingsSaved: "✅ Paramètres sauvegardés",
@@ -234,7 +234,7 @@ const translations = {
     minToRepay: "min à rembourser",
 
     // Messages
-    notEnoughLeisure: "⚠️ Pas assez de temps de loisir",
+    notEnoughLeisure: "⚠️ Il faut au moins 1 min (vous avez {0} min)",
     sessionTooShort: "⚠️ Session trop courte (min 1 min)",
     earnedLeisure: "✅ Gagné {0} min de loisir",
     debtPaid: "({0} min de dette payée)",

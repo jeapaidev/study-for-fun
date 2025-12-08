@@ -186,7 +186,8 @@ function handleLeisureClick() {
 
   // Validate enough net balance
   if (netBalanceValue < 1) {
-    timerMode.textContent = t("notEnoughLeisure");
+    const currentBalance = netBalanceValue < 0 ? 0 : netBalanceValue.toFixed(1);
+    timerMode.textContent = t("notEnoughLeisure", currentBalance);
     setTimeout(() => {
       updateButtonStates(TIMER_MODES.IDLE);
     }, 2000);

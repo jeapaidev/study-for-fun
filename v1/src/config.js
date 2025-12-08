@@ -22,8 +22,8 @@ function validateConfig(config) {
   if (config.loanInterestRate < 0.0 || config.loanInterestRate > 0.5) {
     throw new Error("loanInterestRate must be between 0.0 and 0.5");
   }
-  if (config.maxDebtLimit < 0 || config.maxDebtLimit > 180) {
-    throw new Error("maxDebtLimit must be between 0 and 180");
+  if (config.maxDebtLimit < 0) {
+    throw new Error("maxDebtLimit must be 0 or greater");
   }
   return true;
 }

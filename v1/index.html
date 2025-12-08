@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+
+    <!-- App Metadata -->
+    <title>Study Time Tracker</title>
+    <meta
+      name="description"
+      content="Track study time and earn leisure time. A simple app for kids to manage study and play balance."
+    />
+    <meta name="author" content="Study Time Tracker" />
+
+    <!-- Theme color for browser chrome -->
+    <meta name="theme-color" content="#3B82F6" />
+
+    <!-- PWA-ready metadata -->
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="Study Tracker" />
+
+    <!-- Open Graph for sharing -->
+    <meta property="og:title" content="Study Time Tracker" />
+    <meta
+      property="og:description"
+      content="Track study time and earn leisure time."
+    />
+    <meta property="og:type" content="website" />
+
+    <link rel="stylesheet" href="/src/style.css" />
+  </head>
+  <body class="min-h-screen text-gray-900 select-none">
+    <div id="app" class="container mx-auto px-4 py-6 sm:px-6 sm:py-10 max-w-md">
+      <!-- Header -->
+      <div class="text-center mb-8">
+        <h1
+          id="app-title"
+          class="text-3xl sm:text-4xl font-extrabold text-white drop-shadow-lg mb-2"
+          data-i18n="appTitle"
+        >
+          📖 Study Tracker
+        </h1>
+        <p
+          id="app-subtitle"
+          class="text-white/80 text-sm"
+          data-i18n="appSubtitle"
+        >
+          Track your study time, earn play time!
+        </p>
+      </div>
+
+      <!-- Main Card: Timer + Balance -->
+      <div
+        id="timer-section"
+        class="glass-card rounded-2xl shadow-xl p-6 sm:p-8 mb-6"
+      >
+        <!-- Timer Display -->
+        <div class="text-center mb-6">
+          <div
+            id="timer-display"
+            class="text-5xl sm:text-6xl font-mono font-bold text-gray-800 mb-2"
+          >
+            00:00
+          </div>
+          <div
+            id="timer-mode"
+            class="text-gray-500 font-medium text-sm sm:text-base"
+          >
+            Ready
+          </div>
+        </div>
+
+        <!-- Divider -->
+        <div
+          class="w-16 h-1 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full mx-auto mb-6"
+        ></div>
+
+        <!-- Balance Display -->
+        <div class="text-center">
+          <div
+            class="text-xs uppercase tracking-wider text-gray-500 font-semibold mb-1"
+            data-i18n="netBalance"
+          >
+            Net Balance
+          </div>
+          <div
+            id="net-balance"
+            class="text-3xl sm:text-4xl font-bold text-green-600"
+          >
+            0 min
+          </div>
+          <div id="balance-hint" class="text-xs text-gray-400 mt-2">
+            Positive = play time available
+          </div>
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div id="action-buttons" class="grid grid-cols-3 gap-3 mb-6">
+        <button
+          id="study-btn"
+          class="bg-gradient-to-br from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 active:from-blue-700 active:to-blue-800 text-white font-bold py-4 px-3 rounded-xl shadow-lg touch-manipulation text-sm"
+        >
+          <span class="text-2xl block mb-1">📚</span>
+          <span data-i18n="study">Study</span>
+        </button>
+        <button
+          id="leisure-btn"
+          class="bg-gradient-to-br from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 active:from-green-700 active:to-green-800 text-white font-bold py-4 px-3 rounded-xl shadow-lg touch-manipulation disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none text-sm"
+        >
+          <span class="text-2xl block mb-1">🎮</span>
+          <span data-i18n="leisureBtn">Leisure</span>
+        </button>
+        <button
+          id="loan-btn"
+          class="bg-gradient-to-br from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 active:from-amber-700 active:to-orange-700 text-white font-bold py-4 px-3 rounded-xl shadow-lg touch-manipulation text-sm"
+        >
+          <span class="text-2xl block mb-1">💰</span>
+          <span data-i18n="loan">Loan</span>
+        </button>
+        <button
+          id="stop-btn"
+          class="col-span-3 bg-gradient-to-br from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 active:from-red-700 active:to-red-800 text-white font-bold py-4 px-6 rounded-xl shadow-lg touch-manipulation hidden text-base"
+        >
+          <span class="text-2xl mr-2">⏹️</span>
+          <span data-i18n="stopTimer">Stop Timer</span>
+        </button>
+      </div>
+
+      <!-- Loan Section -->
+      <div
+        id="loan-section"
+        class="glass-card rounded-2xl shadow-xl p-5 sm:p-6 mb-6 hidden"
+      >
+        <h3
+          class="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2"
+        >
+          <span class="text-2xl">💰</span>
+          <span data-i18n="requestLoan">Request Loan</span>
+        </h3>
+
+        <div class="mb-4">
+          <label
+            for="loan-amount"
+            class="block text-sm font-medium text-gray-600 mb-2"
+            data-i18n="leisureMinutesToBorrow"
+          >
+            Leisure minutes to borrow
+          </label>
+          <input
+            type="number"
+            id="loan-amount"
+            min="1"
+            max="60"
+            value="10"
+            class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition text-lg font-semibold"
+          />
+        </div>
+
+        <div
+          id="loan-preview"
+          class="bg-gradient-to-r from-amber-50 to-orange-50 rounded-xl p-4 mb-5 border border-amber-200"
+        >
+          <div class="text-sm text-gray-600 mb-1" data-i18n="repaymentRequired">
+            Repayment required:
+          </div>
+          <div id="loan-repayment" class="text-2xl font-bold text-amber-700">
+            0 min study
+          </div>
+          <div
+            id="loan-error"
+            class="text-red-600 text-sm mt-2 font-medium hidden"
+          ></div>
+        </div>
+
+        <div class="flex gap-3">
+          <button
+            id="loan-confirm-btn"
+            class="flex-1 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-bold py-3 px-4 rounded-xl shadow-md transition disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            ✓ <span data-i18n="confirm">Confirm</span>
+          </button>
+          <button
+            id="loan-cancel-btn"
+            class="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold py-3 px-4 rounded-xl transition"
+          >
+            ✗ <span data-i18n="cancel">Cancel</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Settings Section (Collapsible) -->
+      <details
+        id="settings-section"
+        class="glass-card rounded-2xl shadow-lg mb-4 overflow-hidden"
+      >
+        <summary
+          class="p-4 cursor-pointer font-bold text-gray-700 flex items-center gap-2 hover:bg-gray-50 transition"
+        >
+          <span class="text-xl">⚙️</span>
+          <span data-i18n="settings">Settings</span>
+        </summary>
+        <div class="px-5 pb-5 pt-2 border-t border-gray-100">
+          <div class="space-y-5">
+            <!-- Language Selector -->
+            <div>
+              <label
+                for="settings-language"
+                class="block text-sm font-medium text-gray-600 mb-2"
+                data-i18n="language"
+              >
+                Language
+              </label>
+              <select
+                id="settings-language"
+                class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition bg-white"
+              >
+                <option value="en">English</option>
+                <option value="es">Español</option>
+                <option value="fr">Français</option>
+              </select>
+            </div>
+
+            <!-- Leisure Factor -->
+            <div>
+              <label
+                for="settings-leisure-factor"
+                class="block text-sm font-medium text-gray-600 mb-2"
+                data-i18n="leisureFactor"
+              >
+                Leisure Factor (0.1 - 1.0)
+              </label>
+              <input
+                type="number"
+                id="settings-leisure-factor"
+                min="0.1"
+                max="1.0"
+                step="0.1"
+                class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
+              />
+              <p
+                class="text-xs text-gray-400 mt-1"
+                data-i18n="leisureFactorHint"
+              >
+                1 min study = X min leisure
+              </p>
+            </div>
+
+            <!-- Loan Interest Rate -->
+            <div>
+              <label
+                for="settings-interest-rate"
+                class="block text-sm font-medium text-gray-600 mb-2"
+                data-i18n="loanInterestRate"
+              >
+                Loan Interest Rate (0% - 50%)
+              </label>
+              <input
+                type="number"
+                id="settings-interest-rate"
+                min="0"
+                max="50"
+                step="5"
+                class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
+              />
+              <p
+                class="text-xs text-gray-400 mt-1"
+                data-i18n="loanInterestHint"
+              >
+                Extra study required on loans
+              </p>
+            </div>
+
+            <!-- Max Debt Limit -->
+            <div>
+              <label
+                for="settings-debt-limit"
+                class="block text-sm font-medium text-gray-600 mb-2"
+                data-i18n="maxDebtLimit"
+              >
+                Max Debt Limit (0 - 180 min)
+              </label>
+              <input
+                type="number"
+                id="settings-debt-limit"
+                min="0"
+                max="180"
+                step="5"
+                class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
+              />
+              <p class="text-xs text-gray-400 mt-1" data-i18n="maxDebtHint">
+                Maximum study debt allowed
+              </p>
+            </div>
+
+            <!-- Settings validation message -->
+            <div id="settings-message" class="text-sm font-medium hidden"></div>
+
+            <!-- Settings buttons -->
+            <div class="flex gap-3 pt-1">
+              <button
+                id="settings-save-btn"
+                class="flex-1 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-bold py-3 px-4 rounded-xl shadow-md transition"
+              >
+                💾 <span data-i18n="save">Save</span>
+              </button>
+              <button
+                id="settings-reset-btn"
+                class="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold py-3 px-4 rounded-xl transition"
+              >
+                🔄 <span data-i18n="reset">Reset</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </details>
+
+      <!-- History Section (Collapsible) -->
+      <details
+        id="history-section"
+        class="glass-card rounded-2xl shadow-lg overflow-hidden"
+      >
+        <summary
+          class="p-4 cursor-pointer font-bold text-gray-700 flex items-center gap-2 hover:bg-gray-50 transition"
+        >
+          <span class="text-xl">📜</span>
+          <span data-i18n="history">History</span>
+        </summary>
+        <div class="px-5 pb-5 pt-2 border-t border-gray-100">
+          <div
+            id="history-list"
+            class="space-y-3 mb-4 max-h-64 overflow-y-auto"
+          >
+            <p
+              id="history-empty"
+              class="text-gray-400 text-center py-6"
+              data-i18n="noHistory"
+            >
+              No history yet
+            </p>
+          </div>
+          <button
+            id="history-clear-btn"
+            class="w-full bg-gray-100 hover:bg-gray-200 text-gray-600 font-bold py-3 px-4 rounded-xl transition disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            🗑️ <span data-i18n="clearHistory">Clear History</span>
+          </button>
+        </div>
+      </details>
+
+      <!-- Footer -->
+      <div class="text-center mt-6 text-white/60 text-xs" data-i18n="version">
+        Study Time Tracker v1.0
+      </div>
+    </div>
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>

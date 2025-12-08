@@ -1,0 +1,143 @@
+@import "tailwindcss";
+
+/* Custom styles for Study Time Tracker */
+
+/* Modern gradient background */
+body {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  min-height: 100vh;
+}
+
+/* Glass morphism effect for cards */
+.glass-card {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+/* Touch-friendly sizing for mobile */
+@media (max-width: 639px) {
+  /* Ensure minimum touch target size (48px recommended by WCAG) */
+  button {
+    min-height: 48px;
+  }
+
+  input[type="number"] {
+    min-height: 44px;
+    font-size: 16px; /* Prevents iOS zoom on focus */
+  }
+}
+
+/* Smooth transitions for timer display */
+#timer-display {
+  transition: color 0.2s ease, transform 0.3s ease;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Timer pulse animation when active */
+@keyframes pulse-glow {
+  0%,
+  100% {
+    box-shadow: 0 0 20px rgba(59, 130, 246, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 40px rgba(59, 130, 246, 0.5);
+  }
+}
+
+#timer-section.studying {
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+/* Button hover lift effect */
+button {
+  transition: all 0.2s ease;
+}
+
+button:not(:disabled):hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+button:not(:disabled):active {
+  transform: translateY(0);
+}
+
+/* Modern input styling */
+input[type="number"] {
+  transition: all 0.2s ease;
+}
+
+input[type="number"]:focus {
+  transform: scale(1.02);
+}
+
+/* Balance display glow effect */
+#net-balance {
+  transition: all 0.3s ease;
+}
+
+#net-balance.text-green-600 {
+  text-shadow: 0 0 20px rgba(34, 197, 94, 0.3);
+}
+
+#net-balance.text-red-600 {
+  text-shadow: 0 0 20px rgba(239, 68, 68, 0.3);
+}
+
+/* Collapsible sections smooth animation */
+details summary {
+  transition: all 0.2s ease;
+}
+
+details summary:hover {
+  background: rgba(0, 0, 0, 0.02);
+}
+
+details[open] summary {
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
+/* History entry hover effect */
+#history-list > div {
+  transition: all 0.2s ease;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+}
+
+#history-list > div:hover {
+  transform: translateX(4px);
+}
+
+/* History list container - prevent horizontal scroll */
+#history-list {
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+/* Safe area padding for notched devices */
+@supports (padding-bottom: env(safe-area-inset-bottom)) {
+  body {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.3);
+}

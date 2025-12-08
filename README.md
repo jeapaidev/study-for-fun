@@ -69,11 +69,11 @@ Build output will be in the `v1/dist` folder.
 
 Access Settings to customize:
 
-| Setting        | Range       | Default | Description                                   |
-| -------------- | ----------- | ------- | --------------------------------------------- |
-| Leisure Factor | 0.1 - 1.0   | 0.5     | Minutes of leisure earned per minute of study |
-| Interest Rate  | 0% - 50%    | 10%     | Extra study time required when borrowing      |
-| Debt Limit     | 0 - 180 min | 60 min  | Maximum study debt allowed                    |
+| Setting        | Range     | Default | Description                                   |
+| -------------- | --------- | ------- | --------------------------------------------- |
+| Leisure Factor | 0.1 - 1.0 | 0.5     | Minutes of leisure earned per minute of study |
+| Interest Rate  | 0% - 50%  | 10%     | Extra study time required when borrowing      |
+| Debt Limit     | 0+        | 60 min  | Maximum study debt allowed (0 = unlimited)    |
 
 ## 🌍 Supported Languages
 

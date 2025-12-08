@@ -106,9 +106,11 @@ function updateTimerDisplay(seconds) {
 /**
  * Update balance display from state
  * Shows net balance (leisure - debt): positive = play time, negative = debt
- * @param {Object} balance - Balance object with leisureAvailable and debtMinutes
+ * loanedLeisure is NOT included in net balance - it's borrowed time, not earned
+ * @param {Object} balance - Balance object with leisureAvailable, debtMinutes, loanedLeisure
  */
 function updateBalanceDisplay(balance) {
+  // Net balance = earned leisure - debt (loaned leisure is separate)
   const netValue = balance.leisureAvailable - balance.debtMinutes;
   const isPositive = netValue >= 0;
 
@@ -138,6 +140,9 @@ function updateBalanceDisplay(balance) {
 function updateButtonStates(mode) {
   const state = loadState();
   const netBalance = state.balance.leisureAvailable - state.balance.debtMinutes;
+  const loanedLeisure = state.balance.loanedLeisure || 0;
+  // Total available leisure = earned (if positive net) + loaned
+  const totalAvailableLeisure = Math.max(0, netBalance) + loanedLeisure;
 
   if (mode === TIMER_MODES.IDLE) {
     // Show action buttons, hide stop button
@@ -146,8 +151,8 @@ function updateButtonStates(mode) {
     loanBtn.classList.remove("hidden");
     stopBtn.classList.add("hidden");
 
-    // Disable leisure if net balance is less than 1 minute
-    leisureBtn.disabled = netBalance < 1;
+    // Disable leisure if no available time (earned or loaned)
+    leisureBtn.disabled = totalAvailableLeisure < 1;
     studyBtn.disabled = false;
     loanBtn.disabled = false;
 
@@ -183,10 +188,14 @@ function handleLeisureClick() {
   const state = loadState();
   const netBalanceValue =
     state.balance.leisureAvailable - state.balance.debtMinutes;
+  const loanedLeisure = state.balance.loanedLeisure || 0;
 
-  // Validate enough net balance
-  if (netBalanceValue < 1) {
-    const currentBalance = netBalanceValue < 0 ? 0 : netBalanceValue.toFixed(1);
+  // Total available = earned leisure (if positive) + loaned leisure
+  const totalAvailable = Math.max(0, netBalanceValue) + loanedLeisure;
+
+  // Validate enough available time
+  if (totalAvailable < 1) {
+    const currentBalance = totalAvailable < 0 ? 0 : totalAvailable.toFixed(1);
     timerMode.textContent = t("notEnoughLeisure", currentBalance);
     setTimeout(() => {
       updateButtonStates(TIMER_MODES.IDLE);
@@ -194,11 +203,11 @@ function handleLeisureClick() {
     return;
   }
 
-  // Store the starting value for stop calculation (use net balance)
-  leisureSessionStartMinutes = netBalanceValue;
+  // Store the starting value for stop calculation
+  leisureSessionStartMinutes = totalAvailable;
 
   // Convert available minutes to seconds for countdown
-  const totalSeconds = Math.floor(netBalanceValue * 60);
+  const totalSeconds = Math.floor(totalAvailable * 60);
 
   startLeisureTimer(
     totalSeconds,

@@ -13,6 +13,7 @@ export const DEFAULT_STATE = {
   balance: {
     leisureAvailable: 0,
     debtMinutes: 0,
+    loanedLeisure: 0, // Borrowed leisure time pending to use
   },
   history: [],
 };
@@ -141,21 +142,33 @@ export function processStudySession(studyMinutes, leisureFactor) {
 
 /**
  * Process a completed leisure session
+ * Consumes loaned leisure first, then earned leisure
  * @param {number} minutesUsed - Leisure minutes consumed
- * @returns {{ leisureUsed: number }} Results of the session
+ * @returns {{ leisureUsed: number, loanedUsed: number, earnedUsed: number }} Results of the session
  */
 export function processLeisureSession(minutesUsed) {
   const state = loadState();
+  let remaining = minutesUsed;
+  let loanedUsed = 0;
+  let earnedUsed = 0;
 
-  // Deduct from available leisure
-  state.balance.leisureAvailable = Math.max(
-    0,
-    state.balance.leisureAvailable - minutesUsed
-  );
+  // First consume from loaned leisure
+  const loanedLeisure = state.balance.loanedLeisure || 0;
+  if (loanedLeisure > 0 && remaining > 0) {
+    loanedUsed = Math.min(loanedLeisure, remaining);
+    state.balance.loanedLeisure = loanedLeisure - loanedUsed;
+    remaining -= loanedUsed;
+  }
+
+  // Then consume from earned leisure (if any remaining)
+  if (remaining > 0 && state.balance.leisureAvailable > 0) {
+    earnedUsed = Math.min(state.balance.leisureAvailable, remaining);
+    state.balance.leisureAvailable -= earnedUsed;
+  }
 
   saveState(state);
 
-  return { leisureUsed: minutesUsed };
+  return { leisureUsed: minutesUsed, loanedUsed, earnedUsed };
 }
 
 /**
@@ -167,8 +180,9 @@ export function processLeisureSession(minutesUsed) {
 export function processLoan(loanMinutes, repaymentDue) {
   const state = loadState();
 
-  // Add borrowed leisure time
-  state.balance.leisureAvailable += loanMinutes;
+  // Add borrowed leisure to loanedLeisure (separate from earned leisure)
+  state.balance.loanedLeisure =
+    (state.balance.loanedLeisure || 0) + loanMinutes;
 
   // Add debt (study time to repay)
   state.balance.debtMinutes += repaymentDue;

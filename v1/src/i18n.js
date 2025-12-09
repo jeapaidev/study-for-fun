@@ -87,6 +87,8 @@ const translations = {
     usedLeisure: "🎮 Used {0} min leisure",
     leisureStopped: "🎮 Leisure session stopped",
     borrowed: "💰 Borrowed {0} min ({1} min to repay)",
+    recoveredLeisure: "🔄 Recovered leisure session",
+    recoveredStudy: "🔄 Recovered study session",
 
     // Footer
     version: "Study & Play v1.0",
@@ -164,6 +166,8 @@ const translations = {
     usedLeisure: "🎮 Usaste {0} min de ocio",
     leisureStopped: "🎮 Sesión de ocio detenida",
     borrowed: "💰 Prestaste {0} min ({1} min a pagar)",
+    recoveredLeisure: "🔄 Sesión de ocio recuperada",
+    recoveredStudy: "🔄 Sesión de estudio recuperada",
 
     // Footer
     version: "Estudia & Juega v1.0",
@@ -241,6 +245,8 @@ const translations = {
     usedLeisure: "🎮 Utilisé {0} min de loisir",
     leisureStopped: "🎮 Session de loisir arrêtée",
     borrowed: "💰 Emprunté {0} min ({1} min à rembourser)",
+    recoveredLeisure: "🔄 Session de loisir récupérée",
+    recoveredStudy: "🔄 Session d'étude récupérée",
 
     // Footer
     version: "Étudie & Joue v1.0",

@@ -5,6 +5,9 @@ import {
   stopTimer,
   getTimerState,
   TIMER_MODES,
+  loadActiveSession,
+  clearActiveSession,
+  forceSaveSession,
 } from "./timer.js";
 import {
   loadState,
@@ -726,6 +729,192 @@ function handleHistoryClear() {
   }
 }
 
+/**
+ * Recover and resume an active session from localStorage
+ * @param {Object} session - The saved session data
+ */
+function recoverActiveSession(session) {
+  if (!session || !session.startTimestamp || !session.mode) {
+    clearActiveSession();
+    return;
+  }
+
+  const elapsedMs = Date.now() - session.startTimestamp;
+  const elapsedSeconds = Math.floor(elapsedMs / 1000);
+  const elapsedMinutes = Math.floor(elapsedSeconds / 60);
+
+  if (session.mode === TIMER_MODES.STUDY) {
+    // Resume study timer from saved timestamp
+    startStudyTimer((seconds) => {
+      updateTimerDisplay(seconds);
+    }, session.startTimestamp);
+
+    updateButtonStates(TIMER_MODES.STUDY);
+    console.log(`Recovered study session: ${elapsedMinutes} minutes elapsed`);
+  } else if (session.mode === TIMER_MODES.LEISURE) {
+    const originalMinutes = session.leisureStartMinutes || 0;
+    const remainingSeconds = Math.max(
+      0,
+      Math.floor(originalMinutes * 60) - elapsedSeconds
+    );
+
+    // If leisure time has completely elapsed, process it
+    if (remainingSeconds <= 0) {
+      // Process the full leisure session
+      handleRecoveredLeisureComplete(originalMinutes);
+      clearActiveSession();
+      return;
+    }
+
+    // Store for stop calculation
+    leisureSessionStartMinutes = originalMinutes;
+
+    // Resume leisure timer from saved timestamp
+    startLeisureTimer(
+      remainingSeconds,
+      (remaining) => {
+        updateTimerDisplay(remaining);
+      },
+      () => {
+        // Auto-complete callback when countdown reaches zero
+        const state = loadState();
+        const netBalanceValue =
+          state.balance.leisureAvailable - state.balance.debtMinutes;
+        handleLeisureComplete(netBalanceValue);
+      },
+      session.startTimestamp,
+      originalMinutes
+    );
+
+    updateButtonStates(TIMER_MODES.LEISURE);
+    console.log(
+      `Recovered leisure session: ${remainingSeconds} seconds remaining`
+    );
+  }
+}
+
+/**
+ * Handle recovered leisure session that completed while app was closed
+ * @param {number} totalMinutes - Total leisure minutes that were used
+ */
+function handleRecoveredLeisureComplete(totalMinutes) {
+  // Capture net balance BEFORE processing
+  const stateBefore = loadState();
+  const netBalanceBefore =
+    stateBefore.balance.leisureAvailable - stateBefore.balance.debtMinutes;
+
+  // Process leisure session - deduct all used time
+  const { leisureUsed } = processLeisureSession(totalMinutes);
+
+  // Capture net balance AFTER processing
+  const stateAfter = loadState();
+  const netBalanceAfter =
+    stateAfter.balance.leisureAvailable - stateAfter.balance.debtMinutes;
+
+  // Add history entry with balance changes
+  addHistoryEntry({
+    id: generateId(),
+    date: new Date().toISOString(),
+    type: "leisure",
+    durationMinutes: totalMinutes,
+    leisureUsed: leisureUsed,
+    netBalanceBefore: netBalanceBefore,
+    netBalanceAfter: netBalanceAfter,
+    recovered: true, // Mark as recovered session
+  });
+
+  // Update displays
+  updateHistoryDisplay();
+  updateBalanceDisplay(stateAfter.balance);
+
+  // Show message that session was recovered
+  timerMode.textContent =
+    t("recoveredLeisure") || `Recovered: ${leisureUsed.toFixed(1)} min leisure`;
+
+  setTimeout(() => {
+    updateButtonStates(TIMER_MODES.IDLE);
+  }, 3000);
+}
+
+/**
+ * Handle page unload - save current session state
+ */
+function handleBeforeUnload() {
+  const timerState = getTimerState();
+  if (timerState.isRunning) {
+    // Force save the current session
+    forceSaveSession();
+
+    // For study sessions, also process and save the elapsed time immediately
+    if (timerState.mode === TIMER_MODES.STUDY) {
+      const elapsedMinutes = Math.floor(timerState.seconds / 60);
+      if (elapsedMinutes >= 1) {
+        // Process study session
+        const config = getConfig();
+        const stateBefore = loadState();
+        const netBalanceBefore =
+          stateBefore.balance.leisureAvailable -
+          stateBefore.balance.debtMinutes;
+
+        const { leisureEarned, debtReduced } = processStudySession(
+          elapsedMinutes,
+          config.leisureFactor
+        );
+
+        const stateAfter = loadState();
+        const netBalanceAfter =
+          stateAfter.balance.leisureAvailable - stateAfter.balance.debtMinutes;
+
+        // Add history entry
+        addHistoryEntry({
+          id: generateId(),
+          date: new Date().toISOString(),
+          type: "study",
+          durationMinutes: elapsedMinutes,
+          leisureEarned: leisureEarned,
+          leisureFactor: config.leisureFactor,
+          netBalanceBefore: netBalanceBefore,
+          netBalanceAfter: netBalanceAfter,
+          recovered: true, // Mark as auto-saved session
+        });
+
+        // Clear the active session since we processed it
+        clearActiveSession();
+      }
+    } else if (timerState.mode === TIMER_MODES.LEISURE) {
+      // Calculate used leisure time
+      const remainingMinutes = timerState.seconds / 60;
+      const usedMinutes = timerState.leisureStartMinutes - remainingMinutes;
+
+      if (usedMinutes > 0) {
+        const stateBefore = loadState();
+        const netBalanceBefore =
+          stateBefore.balance.leisureAvailable -
+          stateBefore.balance.debtMinutes;
+
+        processLeisureSession(usedMinutes);
+
+        const stateAfter = loadState();
+        const netBalanceAfter =
+          stateAfter.balance.leisureAvailable - stateAfter.balance.debtMinutes;
+
+        addHistoryEntry({
+          id: generateId(),
+          date: new Date().toISOString(),
+          type: "leisure",
+          durationMinutes: usedMinutes,
+          leisureUsed: usedMinutes,
+          netBalanceBefore: netBalanceBefore,
+          netBalanceAfter: netBalanceAfter,
+          recovered: true,
+        });
+
+        clearActiveSession();
+      }
+    }
+  }
+}
+
 // Initialize app
 function init() {
   // Load initial state and update UI
@@ -745,6 +934,12 @@ function init() {
   // Load history display
   updateHistoryDisplay();
 
+  // Check for active session to recover
+  const activeSession = loadActiveSession();
+  if (activeSession) {
+    recoverActiveSession(activeSession);
+  }
+
   // Bind event listeners
   studyBtn.addEventListener("click", handleStudyClick);
   leisureBtn.addEventListener("click", handleLeisureClick);
@@ -757,6 +952,9 @@ function init() {
   settingsResetBtn.addEventListener("click", handleSettingsReset);
   historyClearBtn.addEventListener("click", handleHistoryClear);
   settingsLanguage.addEventListener("change", handleLanguageChange);
+
+  // Add beforeunload listener to save session on page close/refresh
+  window.addEventListener("beforeunload", handleBeforeUnload);
 
   console.log("Study Time Tracker initialized");
 }

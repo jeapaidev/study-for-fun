@@ -30,6 +30,7 @@ import {
   generateId,
 } from "./utils.js";
 import { t, getLanguage, saveLanguage, LANGUAGES } from "./i18n.js";
+import { playAlarmSound, stopAlarmSound, isAlarmPlaying } from "./audio.js";
 
 // DOM Element References
 const timerDisplay = document.getElementById("timer-display");
@@ -66,6 +67,10 @@ const historyClearBtn = document.getElementById("history-clear-btn");
 
 // Language UI element
 const settingsLanguage = document.getElementById("settings-language");
+
+// Alarm modal elements
+const alarmModal = document.getElementById("alarm-modal");
+const stopAlarmBtn = document.getElementById("stop-alarm-btn");
 
 // Session state for tracking leisure start value
 let leisureSessionStartMinutes = 0;
@@ -219,11 +224,27 @@ function handleLeisureClick() {
     },
     () => {
       // Auto-complete callback when countdown reaches zero
-      handleLeisureComplete(netBalanceValue);
+      handleLeisureComplete(totalAvailable);
     }
   );
 
   updateButtonStates(TIMER_MODES.LEISURE);
+}
+
+/**
+ * Show alarm modal and start alarm sound
+ */
+function showAlarmModal() {
+  alarmModal.classList.remove("hidden");
+  playAlarmSound();
+}
+
+/**
+ * Hide alarm modal and stop alarm sound
+ */
+function hideAlarmModal() {
+  alarmModal.classList.add("hidden");
+  stopAlarmSound();
 }
 
 /**
@@ -267,10 +288,11 @@ function handleLeisureComplete(totalMinutesStarted) {
   // Update balance display
   updateBalanceDisplay(stateAfter.balance);
 
-  // Return to idle state after delay
-  setTimeout(() => {
-    updateButtonStates(TIMER_MODES.IDLE);
-  }, 2000);
+  // Show alarm modal with loud sound
+  showAlarmModal();
+
+  // Return to idle state
+  updateButtonStates(TIMER_MODES.IDLE);
 }
 
 /**
@@ -777,10 +799,7 @@ function recoverActiveSession(session) {
       },
       () => {
         // Auto-complete callback when countdown reaches zero
-        const state = loadState();
-        const netBalanceValue =
-          state.balance.leisureAvailable - state.balance.debtMinutes;
-        handleLeisureComplete(netBalanceValue);
+        handleLeisureComplete(originalMinutes);
       },
       session.startTimestamp,
       originalMinutes
@@ -831,9 +850,11 @@ function handleRecoveredLeisureComplete(totalMinutes) {
   timerMode.textContent =
     t("recoveredLeisure") || `Recovered: ${leisureUsed.toFixed(1)} min leisure`;
 
-  setTimeout(() => {
-    updateButtonStates(TIMER_MODES.IDLE);
-  }, 3000);
+  // Show alarm modal with loud sound
+  showAlarmModal();
+
+  // Update button states
+  updateButtonStates(TIMER_MODES.IDLE);
 }
 
 /**
@@ -952,6 +973,14 @@ function init() {
   settingsResetBtn.addEventListener("click", handleSettingsReset);
   historyClearBtn.addEventListener("click", handleHistoryClear);
   settingsLanguage.addEventListener("change", handleLanguageChange);
+
+  // Alarm modal button
+  stopAlarmBtn.addEventListener("click", hideAlarmModal);
+
+  // Auto-stop alarm event
+  window.addEventListener("alarmAutoStopped", () => {
+    hideAlarmModal();
+  });
 
   // Add beforeunload listener to save session on page close/refresh
   window.addEventListener("beforeunload", handleBeforeUnload);

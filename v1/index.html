@@ -357,6 +357,46 @@
         Study Time Tracker v1.0
       </div>
     </div>
+
+    <!-- Alarm Modal (hidden by default) -->
+    <div
+      id="alarm-modal"
+      class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+    >
+      <div
+        class="bg-gradient-to-br from-red-500 to-orange-600 rounded-3xl p-8 max-w-sm w-full shadow-2xl border-4 border-white/30 animate-pulse"
+      >
+        <div class="text-center">
+          <h2
+            id="alarm-title"
+            class="text-5xl font-black text-white mb-4 drop-shadow-lg"
+            data-i18n="timeIsUp"
+          >
+            ⏰ TIME IS UP!
+          </h2>
+          <p
+            id="alarm-message"
+            class="text-xl text-white/90 mb-6 font-bold"
+            data-i18n="leisureTimeEnded"
+          >
+            Your leisure time has ended!
+          </p>
+          <button
+            id="stop-alarm-btn"
+            class="w-full bg-white hover:bg-gray-100 text-red-600 font-black text-2xl py-4 px-6 rounded-2xl transition shadow-lg transform hover:scale-105 active:scale-95"
+          >
+            <span data-i18n="stopAlarm">STOP ALARM</span>
+          </button>
+          <p
+            class="text-white/70 text-xs mt-4 font-medium"
+            data-i18n="alarmWillAutoStop"
+          >
+            Alarm will auto-stop in 5 minutes
+          </p>
+        </div>
+      </div>
+    </div>
+
     <script type="module" src="/src/main.js"></script>
   </body>
 </html>

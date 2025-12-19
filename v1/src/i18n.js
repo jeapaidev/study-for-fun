@@ -90,6 +90,12 @@ const translations = {
     recoveredLeisure: "🔄 Recovered leisure session",
     recoveredStudy: "🔄 Recovered study session",
 
+    // Alarm modal
+    timeIsUp: "⏰ TIME IS UP!",
+    leisureTimeEnded: "Your leisure time has ended!",
+    stopAlarm: "STOP ALARM",
+    alarmWillAutoStop: "Alarm will auto-stop in 5 minutes",
+
     // Footer
     version: "Study & Play v1.0",
   },
@@ -169,6 +175,12 @@ const translations = {
     recoveredLeisure: "🔄 Sesión de ocio recuperada",
     recoveredStudy: "🔄 Sesión de estudio recuperada",
 
+    // Alarm modal
+    timeIsUp: "⏰ ¡SE ACABÓ EL TIEMPO!",
+    leisureTimeEnded: "¡Tu tiempo de ocio ha terminado!",
+    stopAlarm: "DETENER ALARMA",
+    alarmWillAutoStop: "La alarma se detendrá automáticamente en 5 minutos",
+
     // Footer
     version: "Estudia & Juega v1.0",
   },
@@ -247,6 +259,12 @@ const translations = {
     borrowed: "💰 Emprunté {0} min ({1} min à rembourser)",
     recoveredLeisure: "🔄 Session de loisir récupérée",
     recoveredStudy: "🔄 Session d'étude récupérée",
+
+    // Alarm modal
+    timeIsUp: "⏰ TEMPS ÉCOULÉ!",
+    leisureTimeEnded: "Votre temps de loisir est terminé !",
+    stopAlarm: "ARRÊTER L'ALARME",
+    alarmWillAutoStop: "L'alarme s'arrêtera automatiquement dans 5 minutes",
 
     // Footer
     version: "Étudie & Joue v1.0",

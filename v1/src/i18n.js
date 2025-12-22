@@ -90,6 +90,15 @@ const translations = {
     recoveredLeisure: "🔄 Recovered leisure session",
     recoveredStudy: "🔄 Recovered study session",
 
+    // Leisure mode modal
+    leisureModeTitle: "🎮 Leisure Time",
+    availableTime: "Available time:",
+    customTime: "Custom time (minutes):",
+    startCustomTime: "Start Custom Time",
+    useAllTime: "Use All Available Time",
+    customTimeExceeds: "Time exceeds available ({0} min)",
+    customTimeMinimum: "Minimum 1 minute",
+
     // Alarm modal
     timeIsUp: "⏰ TIME IS UP!",
     leisureTimeEnded: "Your leisure time has ended!",
@@ -175,6 +184,15 @@ const translations = {
     recoveredLeisure: "🔄 Sesión de ocio recuperada",
     recoveredStudy: "🔄 Sesión de estudio recuperada",
 
+    // Leisure mode modal
+    leisureModeTitle: "🎮 Tiempo de Ocio",
+    availableTime: "Tiempo disponible:",
+    customTime: "Tiempo personalizado (minutos):",
+    startCustomTime: "Iniciar Tiempo Personalizado",
+    useAllTime: "Usar Todo el Tiempo Disponible",
+    customTimeExceeds: "El tiempo excede lo disponible ({0} min)",
+    customTimeMinimum: "Mínimo 1 minuto",
+
     // Alarm modal
     timeIsUp: "⏰ ¡SE ACABÓ EL TIEMPO!",
     leisureTimeEnded: "¡Tu tiempo de ocio ha terminado!",
@@ -259,6 +277,15 @@ const translations = {
     borrowed: "💰 Emprunté {0} min ({1} min à rembourser)",
     recoveredLeisure: "🔄 Session de loisir récupérée",
     recoveredStudy: "🔄 Session d'étude récupérée",
+
+    // Leisure mode modal
+    leisureModeTitle: "🎮 Temps de Loisir",
+    availableTime: "Temps disponible :",
+    customTime: "Temps personnalisé (minutes) :",
+    startCustomTime: "Démarrer le Temps Personnalisé",
+    useAllTime: "Utiliser Tout le Temps Disponible",
+    customTimeExceeds: "Le temps dépasse le disponible ({0} min)",
+    customTimeMinimum: "Minimum 1 minute",
 
     // Alarm modal
     timeIsUp: "⏰ TEMPS ÉCOULÉ!",

@@ -22,8 +22,10 @@ let timerState = {
   intervalId: null,
   onTick: null,
   onComplete: null,
+  onMinuteTick: null, // Callback every minute
   startTimestamp: null, // When the session started
   leisureStartMinutes: 0, // For leisure mode: starting minutes
+  minutesElapsed: 0, // Track minutes elapsed for leisure
 };
 
 /**
@@ -139,13 +141,15 @@ export function startStudyTimer(onTick, resumeFromTimestamp = null) {
  * @param {function} onComplete - Callback when countdown reaches zero
  * @param {number} [resumeFromTimestamp] - Optional timestamp to resume from
  * @param {number} [originalStartMinutes] - Original leisure minutes when session started
+ * @param {function} [onMinuteTick] - Optional callback every minute for balance deduction
  */
 export function startLeisureTimer(
   totalSeconds,
   onTick,
   onComplete,
   resumeFromTimestamp = null,
-  originalStartMinutes = null
+  originalStartMinutes = null,
+  onMinuteTick = null
 ) {
   // Stop any existing timer
   if (timerState.intervalId) {
@@ -157,6 +161,8 @@ export function startLeisureTimer(
 
   // Calculate remaining seconds if resuming
   let currentSeconds = totalSeconds;
+  let minutesAlreadyElapsed = 0;
+
   if (resumeFromTimestamp) {
     const elapsedSeconds = Math.floor(
       (Date.now() - resumeFromTimestamp) / 1000
@@ -165,6 +171,7 @@ export function startLeisureTimer(
       0,
       Math.floor(leisureStartMinutes * 60) - elapsedSeconds
     );
+    minutesAlreadyElapsed = Math.floor(elapsedSeconds / 60);
   }
 
   timerState = {
@@ -174,8 +181,10 @@ export function startLeisureTimer(
     intervalId: null,
     onTick: onTick,
     onComplete: onComplete,
+    onMinuteTick: onMinuteTick,
     startTimestamp: startTimestamp,
     leisureStartMinutes: leisureStartMinutes,
+    minutesElapsed: minutesAlreadyElapsed,
   };
 
   // Save initial session state
@@ -196,10 +205,25 @@ export function startLeisureTimer(
     return;
   }
 
+  let lastMinute = Math.ceil(currentSeconds / 60);
+
   timerState.intervalId = setInterval(() => {
     timerState.seconds--;
+
     if (timerState.onTick) {
       timerState.onTick(timerState.seconds);
+    }
+
+    // Check if a full minute has passed
+    const currentMinute = Math.ceil(timerState.seconds / 60);
+    if (currentMinute < lastMinute) {
+      lastMinute = currentMinute;
+      timerState.minutesElapsed++;
+
+      // Trigger minute callback for balance deduction
+      if (timerState.onMinuteTick) {
+        timerState.onMinuteTick(timerState.minutesElapsed);
+      }
     }
 
     // Auto-save every 60 seconds (1 minute)
@@ -246,8 +270,10 @@ export function stopTimer() {
     intervalId: null,
     onTick: null,
     onComplete: null,
+    onMinuteTick: null,
     startTimestamp: null,
     leisureStartMinutes: 0,
+    minutesElapsed: 0,
   };
 
   return result;

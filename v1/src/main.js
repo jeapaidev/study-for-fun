@@ -11,6 +11,7 @@ import {
 } from "./timer.js";
 import {
   loadState,
+  saveState,
   processStudySession,
   processLeisureSession,
   processLoan,
@@ -71,6 +72,19 @@ const settingsLanguage = document.getElementById("settings-language");
 // Alarm modal elements
 const alarmModal = document.getElementById("alarm-modal");
 const stopAlarmBtn = document.getElementById("stop-alarm-btn");
+
+// Leisure mode modal elements
+const leisureModeModal = document.getElementById("leisure-mode-modal");
+const leisureAvailableDisplay = document.getElementById(
+  "leisure-available-display"
+);
+const leisureCustomTimeInput = document.getElementById("leisure-custom-time");
+const leisureCustomError = document.getElementById("leisure-custom-error");
+const leisureCustomConfirmBtn = document.getElementById(
+  "leisure-custom-confirm"
+);
+const leisureUseAllBtn = document.getElementById("leisure-use-all");
+const leisureModeCancelBtn = document.getElementById("leisure-mode-cancel");
 
 // Session state for tracking leisure start value
 let leisureSessionStartMinutes = 0;
@@ -190,15 +204,77 @@ function handleStudyClick() {
 }
 
 /**
- * Handle leisure button click - start leisure countdown
+ * Show leisure mode selection modal
+ */
+function showLeisureModeModal() {
+  const state = loadState();
+  const netBalanceValue =
+    state.balance.leisureAvailable - state.balance.debtMinutes;
+  const loanedLeisure = state.balance.loanedLeisure || 0;
+  const totalAvailable = Math.max(0, netBalanceValue) + loanedLeisure;
+
+  // Display available time
+  leisureAvailableDisplay.textContent = `${totalAvailable.toFixed(1)} min`;
+
+  // Clear input and error
+  leisureCustomTimeInput.value = "";
+  leisureCustomError.classList.add("hidden");
+
+  // Show modal
+  leisureModeModal.classList.remove("hidden");
+}
+
+/**
+ * Hide leisure mode selection modal
+ */
+function hideLeisureModeModal() {
+  leisureModeModal.classList.add("hidden");
+}
+
+/**
+ * Validate custom leisure time input
+ * @returns {{valid: boolean, minutes: number, error: string}}
+ */
+function validateCustomLeisureTime() {
+  const state = loadState();
+  const netBalanceValue =
+    state.balance.leisureAvailable - state.balance.debtMinutes;
+  const loanedLeisure = state.balance.loanedLeisure || 0;
+  const totalAvailable = Math.max(0, netBalanceValue) + loanedLeisure;
+
+  const inputValue = parseFloat(leisureCustomTimeInput.value);
+
+  if (isNaN(inputValue) || inputValue < 1) {
+    return {
+      valid: false,
+      minutes: 0,
+      error: t("customTimeMinimum"),
+    };
+  }
+
+  if (inputValue > totalAvailable) {
+    return {
+      valid: false,
+      minutes: 0,
+      error: t("customTimeExceeds", totalAvailable.toFixed(1)),
+    };
+  }
+
+  return {
+    valid: true,
+    minutes: inputValue,
+    error: "",
+  };
+}
+
+/**
+ * Handle leisure button click - show mode selection modal
  */
 function handleLeisureClick() {
   const state = loadState();
   const netBalanceValue =
     state.balance.leisureAvailable - state.balance.debtMinutes;
   const loanedLeisure = state.balance.loanedLeisure || 0;
-
-  // Total available = earned leisure (if positive) + loaned leisure
   const totalAvailable = Math.max(0, netBalanceValue) + loanedLeisure;
 
   // Validate enough available time
@@ -211,11 +287,20 @@ function handleLeisureClick() {
     return;
   }
 
-  // Store the starting value for stop calculation
-  leisureSessionStartMinutes = totalAvailable;
+  // Show leisure mode selection modal
+  showLeisureModeModal();
+}
 
-  // Convert available minutes to seconds for countdown
-  const totalSeconds = Math.floor(totalAvailable * 60);
+/**
+ * Start leisure session with specified minutes
+ * @param {number} minutes - Minutes to use for leisure
+ */
+function startLeisureSession(minutes) {
+  // Store the starting value for stop calculation
+  leisureSessionStartMinutes = minutes;
+
+  // Convert minutes to seconds for countdown
+  const totalSeconds = Math.floor(minutes * 60);
 
   startLeisureTimer(
     totalSeconds,
@@ -224,7 +309,33 @@ function handleLeisureClick() {
     },
     () => {
       // Auto-complete callback when countdown reaches zero
-      handleLeisureComplete(totalAvailable);
+      handleLeisureComplete(minutes);
+    },
+    null,
+    minutes,
+    (minutesElapsed) => {
+      // Callback every minute to deduct from balance
+      // Deduct 1 minute from leisure balance
+      const currentState = loadState();
+
+      // Deduct from loaned leisure first, then from earned
+      if (currentState.balance.loanedLeisure > 0) {
+        const toDeduct = Math.min(1, currentState.balance.loanedLeisure);
+        currentState.balance.loanedLeisure -= toDeduct;
+
+        // If we couldn't deduct the full minute from loaned, deduct remainder from earned
+        if (toDeduct < 1) {
+          currentState.balance.leisureAvailable -= 1 - toDeduct;
+        }
+      } else {
+        currentState.balance.leisureAvailable -= 1;
+      }
+
+      // Save the updated balance
+      saveState(currentState);
+
+      // Update balance display immediately
+      updateBalanceDisplay(currentState.balance);
     }
   );
 
@@ -976,6 +1087,36 @@ function init() {
 
   // Alarm modal button
   stopAlarmBtn.addEventListener("click", hideAlarmModal);
+
+  // Leisure mode modal buttons
+  leisureCustomConfirmBtn.addEventListener("click", () => {
+    const validation = validateCustomLeisureTime();
+    if (validation.valid) {
+      hideLeisureModeModal();
+      startLeisureSession(validation.minutes);
+    } else {
+      leisureCustomError.textContent = validation.error;
+      leisureCustomError.classList.remove("hidden");
+    }
+  });
+
+  leisureUseAllBtn.addEventListener("click", () => {
+    const state = loadState();
+    const netBalanceValue =
+      state.balance.leisureAvailable - state.balance.debtMinutes;
+    const loanedLeisure = state.balance.loanedLeisure || 0;
+    const totalAvailable = Math.max(0, netBalanceValue) + loanedLeisure;
+
+    hideLeisureModeModal();
+    startLeisureSession(totalAvailable);
+  });
+
+  leisureModeCancelBtn.addEventListener("click", hideLeisureModeModal);
+
+  // Clear error on input change
+  leisureCustomTimeInput.addEventListener("input", () => {
+    leisureCustomError.classList.add("hidden");
+  });
 
   // Auto-stop alarm event
   window.addEventListener("alarmAutoStopped", () => {

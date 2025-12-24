@@ -155,9 +155,11 @@ function updateBalanceDisplay(balance) {
   balanceHint.textContent = isPositive ? t("positiveHint") : t("negativeHint");
 
   // Show/hide loaned leisure display
-  const loanedLeisureContainer = document.getElementById("loaned-leisure-container");
+  const loanedLeisureContainer = document.getElementById(
+    "loaned-leisure-container"
+  );
   const loanedLeisureDisplay = document.getElementById("loaned-leisure");
-  
+
   if (balance.loanedLeisure && balance.loanedLeisure > 0) {
     // Show loaned leisure if user has borrowed time
     const loanedValue = balance.loanedLeisure;

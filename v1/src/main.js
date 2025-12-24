@@ -363,15 +363,15 @@ function hideAlarmModal() {
  * @param {number} totalMinutesStarted - Total minutes when leisure started
  */
 function handleLeisureComplete(totalMinutesStarted) {
-  // Capture net balance BEFORE processing
+  // Capture net balance BEFORE processing (already deducted in real-time)
   const stateBefore = loadState();
   const netBalanceBefore =
     stateBefore.balance.leisureAvailable - stateBefore.balance.debtMinutes;
 
-  // Process leisure session - deduct all available time
-  const { leisureUsed } = processLeisureSession(totalMinutesStarted);
+  // NOTE: We don't call processLeisureSession here because the balance
+  // has already been deducted in real-time via the onMinuteTick callback
 
-  // Capture net balance AFTER processing
+  // Capture net balance AFTER (should be the same since already deducted)
   const stateAfter = loadState();
   const netBalanceAfter =
     stateAfter.balance.leisureAvailable - stateAfter.balance.debtMinutes;
@@ -382,7 +382,7 @@ function handleLeisureComplete(totalMinutesStarted) {
     date: new Date().toISOString(),
     type: "leisure",
     durationMinutes: totalMinutesStarted,
-    leisureUsed: leisureUsed,
+    leisureUsed: totalMinutesStarted,
     netBalanceBefore: netBalanceBefore,
     netBalanceAfter: netBalanceAfter,
   });
@@ -391,7 +391,7 @@ function handleLeisureComplete(totalMinutesStarted) {
   updateHistoryDisplay();
 
   // Show result message
-  timerMode.textContent = t("usedLeisure", leisureUsed.toFixed(1));
+  timerMode.textContent = t("usedLeisure", totalMinutesStarted.toFixed(1));
 
   // Reset timer display
   updateTimerDisplay(0);
@@ -476,14 +476,39 @@ function handleStopClick() {
     // Calculate actual minutes used (original - remaining)
     const actualUsedMinutes = leisureSessionStartMinutes - remainingMinutes;
 
+    // Calculate full minutes already deducted by onMinuteTick
+    const fullMinutesDeducted = Math.floor(actualUsedMinutes);
+
+    // Calculate partial minute remaining (not yet deducted)
+    const partialMinute = actualUsedMinutes - fullMinutesDeducted;
+
     if (actualUsedMinutes > 0) {
-      // Capture net balance BEFORE processing
+      // Capture net balance BEFORE final deduction
       const stateBefore = loadState();
       const netBalanceBefore =
         stateBefore.balance.leisureAvailable - stateBefore.balance.debtMinutes;
 
-      // Process only the used portion
-      processLeisureSession(actualUsedMinutes);
+      // Only deduct the partial minute that wasn't deducted in real-time
+      if (partialMinute > 0) {
+        const currentState = loadState();
+
+        // Deduct partial minute from loaned leisure first, then from earned
+        if (currentState.balance.loanedLeisure > 0) {
+          const toDeduct = Math.min(
+            partialMinute,
+            currentState.balance.loanedLeisure
+          );
+          currentState.balance.loanedLeisure -= toDeduct;
+
+          if (toDeduct < partialMinute) {
+            currentState.balance.leisureAvailable -= partialMinute - toDeduct;
+          }
+        } else {
+          currentState.balance.leisureAvailable -= partialMinute;
+        }
+
+        saveState(currentState);
+      }
 
       // Capture net balance AFTER processing
       const stateAfter = loadState();
@@ -913,7 +938,25 @@ function recoverActiveSession(session) {
         handleLeisureComplete(originalMinutes);
       },
       session.startTimestamp,
-      originalMinutes
+      originalMinutes,
+      (minutesElapsed) => {
+        // Callback every minute to deduct from balance (same as normal session)
+        const currentState = loadState();
+
+        if (currentState.balance.loanedLeisure > 0) {
+          const toDeduct = Math.min(1, currentState.balance.loanedLeisure);
+          currentState.balance.loanedLeisure -= toDeduct;
+
+          if (toDeduct < 1) {
+            currentState.balance.leisureAvailable -= 1 - toDeduct;
+          }
+        } else {
+          currentState.balance.leisureAvailable -= 1;
+        }
+
+        saveState(currentState);
+        updateBalanceDisplay(currentState.balance);
+      }
     );
 
     updateButtonStates(TIMER_MODES.LEISURE);
@@ -934,6 +977,7 @@ function handleRecoveredLeisureComplete(totalMinutes) {
     stateBefore.balance.leisureAvailable - stateBefore.balance.debtMinutes;
 
   // Process leisure session - deduct all used time
+  // (This is correct here because the session was closed, no real-time deduction happened)
   const { leisureUsed } = processLeisureSession(totalMinutes);
 
   // Capture net balance AFTER processing

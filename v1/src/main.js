@@ -153,6 +153,23 @@ function updateBalanceDisplay(balance) {
 
   // Update hint text with translation
   balanceHint.textContent = isPositive ? t("positiveHint") : t("negativeHint");
+
+  // Show/hide loaned leisure display
+  const loanedLeisureContainer = document.getElementById("loaned-leisure-container");
+  const loanedLeisureDisplay = document.getElementById("loaned-leisure");
+  
+  if (balance.loanedLeisure && balance.loanedLeisure > 0) {
+    // Show loaned leisure if user has borrowed time
+    const loanedValue = balance.loanedLeisure;
+    const formattedLoanedValue = Number.isInteger(loanedValue)
+      ? loanedValue
+      : loanedValue.toFixed(1);
+    loanedLeisureDisplay.textContent = `${formattedLoanedValue} min`;
+    loanedLeisureContainer.classList.remove("hidden");
+  } else {
+    // Hide if no borrowed time
+    loanedLeisureContainer.classList.add("hidden");
+  }
 }
 
 /**
@@ -176,7 +193,8 @@ function updateButtonStates(mode) {
     // Disable leisure if no available time (earned or loaned)
     leisureBtn.disabled = totalAvailableLeisure < 1;
     studyBtn.disabled = false;
-    loanBtn.disabled = false;
+    // Disable loan if balance is positive (user already has leisure time)
+    loanBtn.disabled = netBalance > 0;
 
     // Update timer mode text
     timerMode.textContent = t("ready");
@@ -589,6 +607,21 @@ function updateLoanPreview() {
  * Handle loan button click - show loan dialog
  */
 function handleLoanClick() {
+  const state = loadState();
+  const netBalanceValue =
+    state.balance.leisureAvailable - state.balance.debtMinutes;
+
+  // Prevent loan if balance is positive
+  if (netBalanceValue > 0) {
+    timerMode.textContent =
+      t("cannotLoanPositiveBalance") ||
+      "No puedes solicitar un préstamo con balance positivo";
+    setTimeout(() => {
+      updateButtonStates(TIMER_MODES.IDLE);
+    }, 2000);
+    return;
+  }
+
   // Show loan section
   loanSection.classList.remove("hidden");
 

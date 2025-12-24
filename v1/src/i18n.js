@@ -26,6 +26,7 @@ const translations = {
     netBalance: "Net Balance",
     positiveHint: "Positive = play time available",
     negativeHint: "Negative = study time owed",
+    loanedLeisureLabel: "Borrowed Time",
 
     // Action buttons
     study: "Study",
@@ -42,6 +43,7 @@ const translations = {
     cancel: "Cancel",
     exceedsDebtLimit: "Exceeds debt limit (max {0} min)",
     minimumLoan: "Minimum loan is 1 minute",
+    cannotLoanPositiveBalance: "💰 Cannot request a loan with positive balance",
 
     // Settings section
     settings: "Settings",
@@ -120,6 +122,7 @@ const translations = {
     netBalance: "Balance Neto",
     positiveHint: "Positivo = tiempo de juego disponible",
     negativeHint: "Negativo = tiempo de estudio pendiente",
+    loanedLeisureLabel: "Tiempo Solicitado en Préstamo",
 
     // Action buttons
     study: "Estudiar",
@@ -136,6 +139,8 @@ const translations = {
     cancel: "Cancelar",
     exceedsDebtLimit: "Excede límite de deuda (máx {0} min)",
     minimumLoan: "El préstamo mínimo es 1 minuto",
+    cannotLoanPositiveBalance:
+      "💰 No puedes solicitar un préstamo con balance positivo",
 
     // Settings section
     settings: "Configuración",
@@ -214,6 +219,7 @@ const translations = {
     netBalance: "Solde Net",
     positiveHint: "Positif = temps de jeu disponible",
     negativeHint: "Négatif = temps d'étude dû",
+    loanedLeisureLabel: "Temps Emprunté",
 
     // Action buttons
     study: "Étudier",
@@ -230,6 +236,8 @@ const translations = {
     cancel: "Annuler",
     exceedsDebtLimit: "Dépasse la limite de dette (max {0} min)",
     minimumLoan: "Le prêt minimum est de 1 minute",
+    cannotLoanPositiveBalance:
+      "💰 Impossible de demander un prêt avec un solde positif",
 
     // Settings section
     settings: "Paramètres",

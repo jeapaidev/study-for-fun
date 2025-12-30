@@ -32,6 +32,7 @@ import {
 } from "./utils.js";
 import { t, getLanguage, saveLanguage, LANGUAGES } from "./i18n.js";
 import { playAlarmSound, stopAlarmSound, isAlarmPlaying } from "./audio.js";
+import { hasPassword, savePassword, verifyPassword } from "./password.js";
 
 // DOM Element References
 const timerDisplay = document.getElementById("timer-display");
@@ -85,6 +86,22 @@ const leisureCustomConfirmBtn = document.getElementById(
 );
 const leisureUseAllBtn = document.getElementById("leisure-use-all");
 const leisureModeCancelBtn = document.getElementById("leisure-mode-cancel");
+
+// Manual time modal elements
+const manualTimeBtn = document.getElementById("manual-time-btn");
+const manualTimeModal = document.getElementById("manual-time-modal");
+const manualTimePassword = document.getElementById("manual-time-password");
+const manualTimeAmount = document.getElementById("manual-time-amount");
+const manualTimeError = document.getElementById("manual-time-error");
+const manualTimeConfirm = document.getElementById("manual-time-confirm");
+const manualTimeCancel = document.getElementById("manual-time-cancel");
+
+// Setup password modal elements
+const setupPasswordModal = document.getElementById("setup-password-modal");
+const setupPasswordInput = document.getElementById("setup-password-input");
+const setupPasswordConfirm = document.getElementById("setup-password-confirm");
+const setupPasswordError = document.getElementById("setup-password-error");
+const setupPasswordSave = document.getElementById("setup-password-save");
 
 // Session state for tracking leisure start value
 let leisureSessionStartMinutes = 0;
@@ -953,6 +970,13 @@ function formatHistoryEntry(entry) {
       colorClass =
         "border-amber-400 bg-gradient-to-r from-amber-50 to-orange-50";
       break;
+    case "manual":
+      icon = "🔑";
+      typeLabel = t("addTimeManually") || "Manual Time";
+      details = `+${entry.minutesAdded} ${t("minLeisure")} ${t("addTime") || "(added)"}`;
+      colorClass =
+        "border-purple-400 bg-gradient-to-r from-purple-50 to-pink-50";
+      break;
     default:
       icon = "❓";
       typeLabel = t("unknownEntry");
@@ -1237,6 +1261,145 @@ function handleBeforeUnload() {
   }
 }
 
+/**
+ * Show setup password modal (first time)
+ */
+function showSetupPasswordModal() {
+  setupPasswordInput.value = "";
+  setupPasswordConfirm.value = "";
+  setupPasswordError.classList.add("hidden");
+  setupPasswordModal.classList.remove("hidden");
+}
+
+/**
+ * Hide setup password modal
+ */
+function hideSetupPasswordModal() {
+  setupPasswordModal.classList.add("hidden");
+}
+
+/**
+ * Handle setup password save
+ */
+async function handleSetupPasswordSave() {
+  const password = setupPasswordInput.value;
+  const confirm = setupPasswordConfirm.value;
+
+  // Validate
+  if (password.length < 4) {
+    setupPasswordError.textContent = t("passwordTooShort");
+    setupPasswordError.classList.remove("hidden");
+    return;
+  }
+
+  if (password !== confirm) {
+    setupPasswordError.textContent = t("passwordMismatch");
+    setupPasswordError.classList.remove("hidden");
+    return;
+  }
+
+  try {
+    await savePassword(password);
+    hideSetupPasswordModal();
+    timerMode.textContent = t("passwordSaved");
+    setTimeout(() => {
+      updateButtonStates(TIMER_MODES.IDLE);
+    }, 2000);
+  } catch (e) {
+    setupPasswordError.textContent = e.message;
+    setupPasswordError.classList.remove("hidden");
+  }
+}
+
+/**
+ * Show manual time modal
+ */
+function showManualTimeModal() {
+  manualTimePassword.value = "";
+  manualTimeAmount.value = "30";
+  manualTimeError.classList.add("hidden");
+  manualTimeModal.classList.remove("hidden");
+}
+
+/**
+ * Hide manual time modal
+ */
+function hideManualTimeModal() {
+  manualTimeModal.classList.add("hidden");
+}
+
+/**
+ * Handle manual time button click
+ */
+function handleManualTimeClick() {
+  // Check if password is configured
+  if (!hasPassword()) {
+    // First time - show setup modal
+    showSetupPasswordModal();
+  } else {
+    // Password exists - show add time modal
+    showManualTimeModal();
+  }
+}
+
+/**
+ * Handle manual time confirm
+ */
+async function handleManualTimeConfirm() {
+  const password = manualTimePassword.value;
+  const minutes = parseInt(manualTimeAmount.value, 10);
+
+  // Validate password
+  const isValid = await verifyPassword(password);
+  if (!isValid) {
+    manualTimeError.textContent = t("incorrectPassword");
+    manualTimeError.classList.remove("hidden");
+    return;
+  }
+
+  // Validate amount
+  if (isNaN(minutes) || minutes < 1) {
+    manualTimeError.textContent = t("customTimeMinimum");
+    manualTimeError.classList.remove("hidden");
+    return;
+  }
+
+  // Add time to balance
+  const stateBefore = loadState();
+  const netBalanceBefore =
+    stateBefore.balance.leisureAvailable - stateBefore.balance.debtMinutes;
+
+  stateBefore.balance.leisureAvailable += minutes;
+  saveState(stateBefore);
+
+  const stateAfter = loadState();
+  const netBalanceAfter =
+    stateAfter.balance.leisureAvailable - stateAfter.balance.debtMinutes;
+
+  // Add history entry
+  addHistoryEntry({
+    id: generateId(),
+    date: new Date().toISOString(),
+    type: "manual",
+    minutesAdded: minutes,
+    netBalanceBefore: netBalanceBefore,
+    netBalanceAfter: netBalanceAfter,
+  });
+
+  // Update displays
+  updateBalanceDisplay(stateAfter.balance);
+  updateHistoryDisplay();
+
+  // Hide modal
+  hideManualTimeModal();
+
+  // Show success message
+  timerMode.textContent = t("timeAdded", minutes);
+  setTimeout(() => {
+    updateButtonStates(TIMER_MODES.IDLE);
+  }, 2000);
+}
+
 // Initialize app
 function init() {
   // Load initial state and update UI
@@ -1307,6 +1470,14 @@ function init() {
   leisureCustomTimeInput.addEventListener("input", () => {
     leisureCustomError.classList.add("hidden");
   });
+
+  // Manual time buttons
+  manualTimeBtn.addEventListener("click", handleManualTimeClick);
+  manualTimeConfirm.addEventListener("click", handleManualTimeConfirm);
+  manualTimeCancel.addEventListener("click", hideManualTimeModal);
+
+  // Setup password buttons
+  setupPasswordSave.addEventListener("click", handleSetupPasswordSave);
 
   // Auto-stop alarm event
   window.addEventListener("alarmAutoStopped", () => {

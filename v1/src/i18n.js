@@ -108,6 +108,24 @@ const translations = {
     stopAlarm: "STOP ALARM",
     alarmWillAutoStop: "Alarm will auto-stop in 5 minutes",
 
+    // Manual time (password protected)
+    addTimeManually: "Add Time Manually",
+    manualTimeTitle: "🔑 Add Time Manually",
+    manualTimeDescription: "Enter password to add time",
+    password: "Password",
+    minutesToAdd: "Minutes to add",
+    addTime: "Add Time",
+    setupPasswordTitle: "🔐 Setup Password",
+    setupPasswordDescription: "Create a password to protect manual time adjustment",
+    newPassword: "New Password",
+    confirmPassword: "Confirm Password",
+    savePassword: "Save Password",
+    passwordMismatch: "Passwords do not match",
+    passwordTooShort: "Password must be at least 4 characters",
+    incorrectPassword: "Incorrect password",
+    timeAdded: "✅ Added {0} min to balance",
+    passwordSaved: "✅ Password configured successfully",
+
     // Footer
     version: "Study & Play v1.0",
   },
@@ -206,6 +224,24 @@ const translations = {
     stopAlarm: "DETENER ALARMA",
     alarmWillAutoStop: "La alarma se detendrá automáticamente en 5 minutos",
 
+    // Manual time (password protected)
+    addTimeManually: "Agregar Tiempo Manualmente",
+    manualTimeTitle: "🔑 Agregar Tiempo Manualmente",
+    manualTimeDescription: "Ingresa la contraseña para agregar tiempo",
+    password: "Contraseña",
+    minutesToAdd: "Minutos a agregar",
+    addTime: "Agregar Tiempo",
+    setupPasswordTitle: "🔐 Configurar Contraseña",
+    setupPasswordDescription: "Crea una contraseña para proteger el ajuste manual de tiempo",
+    newPassword: "Nueva Contraseña",
+    confirmPassword: "Confirmar Contraseña",
+    savePassword: "Guardar Contraseña",
+    passwordMismatch: "Las contraseñas no coinciden",
+    passwordTooShort: "La contraseña debe tener al menos 4 caracteres",
+    incorrectPassword: "Contraseña incorrecta",
+    timeAdded: "✅ Se agregaron {0} min al balance",
+    passwordSaved: "✅ Contraseña configurada exitosamente",
+
     // Footer
     version: "Estudia & Juega v1.0",
   },
@@ -303,6 +339,24 @@ const translations = {
     leisureTimeEnded: "Votre temps de loisir est terminé !",
     stopAlarm: "ARRÊTER L'ALARME",
     alarmWillAutoStop: "L'alarme s'arrêtera automatiquement dans 5 minutes",
+
+    // Manual time (password protected)
+    addTimeManually: "Ajouter du Temps Manuellement",
+    manualTimeTitle: "🔑 Ajouter du Temps Manuellement",
+    manualTimeDescription: "Entrez le mot de passe pour ajouter du temps",
+    password: "Mot de passe",
+    minutesToAdd: "Minutes à ajouter",
+    addTime: "Ajouter du Temps",
+    setupPasswordTitle: "🔐 Configurer le Mot de Passe",
+    setupPasswordDescription: "Créez un mot de passe pour protéger l'ajustement manuel du temps",
+    newPassword: "Nouveau Mot de Passe",
+    confirmPassword: "Confirmer le Mot de Passe",
+    savePassword: "Enregistrer le Mot de Passe",
+    passwordMismatch: "Les mots de passe ne correspondent pas",
+    passwordTooShort: "Le mot de passe doit contenir au moins 4 caractères",
+    incorrectPassword: "Mot de passe incorrect",
+    timeAdded: "✅ {0} min ajoutées au solde",
+    passwordSaved: "✅ Mot de passe configuré avec succès",
 
     // Footer
     version: "Étudie & Joue v1.0",

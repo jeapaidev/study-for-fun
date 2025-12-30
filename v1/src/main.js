@@ -95,6 +95,7 @@ let isTabLocked = false; // True if another tab has an active session
 
 /**
  * Check if another tab has an active session
+ * Session is considered inactive if lastHeartbeat is older than 5 seconds
  * @returns {boolean} True if another tab is active
  */
 function isAnotherTabActive() {
@@ -102,6 +103,23 @@ function isAnotherTabActive() {
   if (!activeSession || !activeSession.tabId) {
     return false;
   }
+
+  // Check if session is stale (no heartbeat in last 5 seconds)
+  const HEARTBEAT_TIMEOUT = 5000; // 5 seconds
+  const lastHeartbeat = activeSession.lastHeartbeat || activeSession.savedAt;
+  const timeSinceLastHeartbeat = Date.now() - lastHeartbeat;
+
+  if (timeSinceLastHeartbeat > HEARTBEAT_TIMEOUT) {
+    // Session is stale, clear it
+    console.log(
+      "Clearing stale session (no heartbeat for",
+      timeSinceLastHeartbeat,
+      "ms)"
+    );
+    clearActiveSession();
+    return false;
+  }
+
   // If session exists and tabId is different, another tab is active
   return activeSession.tabId !== TAB_ID;
 }

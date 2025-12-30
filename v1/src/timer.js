@@ -49,11 +49,13 @@ export function getTimerState() {
 function saveActiveSession(tabId = null) {
   if (!timerState.isRunning) return;
 
+  const now = Date.now();
   const session = {
     mode: timerState.mode,
     startTimestamp: timerState.startTimestamp,
     leisureStartMinutes: timerState.leisureStartMinutes,
-    savedAt: Date.now(),
+    savedAt: now,
+    lastHeartbeat: now, // Last time this tab was active
     tabId: tabId || timerState.tabId, // Track which tab owns this session
   };
 
@@ -135,10 +137,8 @@ export function startStudyTimer(
     if (timerState.onTick) {
       timerState.onTick(timerState.seconds);
     }
-    // Auto-save every 60 seconds (1 minute)
-    if (timerState.seconds % 60 === 0) {
-      saveActiveSession(tabId);
-    }
+    // Update heartbeat every second to show this tab is active
+    saveActiveSession(tabId);
   }, 1000);
 }
 
@@ -235,10 +235,8 @@ export function startLeisureTimer(
       }
     }
 
-    // Auto-save every 60 seconds (1 minute)
-    if (timerState.seconds % 60 === 0 && timerState.seconds > 0) {
-      saveActiveSession();
-    }
+    // Update heartbeat every second to show this tab is active
+    saveActiveSession();
 
     // Auto-complete when countdown reaches zero
     if (timerState.seconds <= 0) {

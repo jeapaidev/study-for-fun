@@ -116,7 +116,8 @@ const translations = {
     minutesToAdd: "Minutes to add",
     addTime: "Add Time",
     setupPasswordTitle: "🔐 Setup Password",
-    setupPasswordDescription: "Create a password to protect manual time adjustment",
+    setupPasswordDescription:
+      "Create a password to protect manual time adjustment",
     newPassword: "New Password",
     confirmPassword: "Confirm Password",
     savePassword: "Save Password",
@@ -232,7 +233,8 @@ const translations = {
     minutesToAdd: "Minutos a agregar",
     addTime: "Agregar Tiempo",
     setupPasswordTitle: "🔐 Configurar Contraseña",
-    setupPasswordDescription: "Crea una contraseña para proteger el ajuste manual de tiempo",
+    setupPasswordDescription:
+      "Crea una contraseña para proteger el ajuste manual de tiempo",
     newPassword: "Nueva Contraseña",
     confirmPassword: "Confirmar Contraseña",
     savePassword: "Guardar Contraseña",
@@ -348,7 +350,8 @@ const translations = {
     minutesToAdd: "Minutes à ajouter",
     addTime: "Ajouter du Temps",
     setupPasswordTitle: "🔐 Configurer le Mot de Passe",
-    setupPasswordDescription: "Créez un mot de passe pour protéger l'ajustement manuel du temps",
+    setupPasswordDescription:
+      "Créez un mot de passe pour protéger l'ajustement manuel du temps",
     newPassword: "Nouveau Mot de Passe",
     confirmPassword: "Confirmer le Mot de Passe",
     savePassword: "Enregistrer le Mot de Passe",

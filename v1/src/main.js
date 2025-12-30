@@ -973,7 +973,9 @@ function formatHistoryEntry(entry) {
     case "manual":
       icon = "🔑";
       typeLabel = t("addTimeManually") || "Manual Time";
-      details = `+${entry.minutesAdded} ${t("minLeisure")} ${t("addTime") || "(added)"}`;
+      details = `+${entry.minutesAdded} ${t("minLeisure")} ${
+        t("addTime") || "(added)"
+      }`;
       colorClass =
         "border-purple-400 bg-gradient-to-r from-purple-50 to-pink-50";
       break;

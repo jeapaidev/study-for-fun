@@ -91,6 +91,7 @@ const translations = {
     borrowed: "💰 Borrowed {0} min ({1} min to repay)",
     recoveredLeisure: "🔄 Recovered leisure session",
     recoveredStudy: "🔄 Recovered study session",
+    anotherTabActive: "⚠️ Active session in another tab",
 
     // Leisure mode modal
     leisureModeTitle: "🎮 Leisure Time",
@@ -188,6 +189,7 @@ const translations = {
     borrowed: "💰 Prestaste {0} min ({1} min a pagar)",
     recoveredLeisure: "🔄 Sesión de ocio recuperada",
     recoveredStudy: "🔄 Sesión de estudio recuperada",
+    anotherTabActive: "⚠️ Sesión activa en otra pestaña",
 
     // Leisure mode modal
     leisureModeTitle: "🎮 Tiempo de Ocio",
@@ -285,6 +287,7 @@ const translations = {
     borrowed: "💰 Emprunté {0} min ({1} min à rembourser)",
     recoveredLeisure: "🔄 Session de loisir récupérée",
     recoveredStudy: "🔄 Session d'étude récupérée",
+    anotherTabActive: "⚠️ Session active dans un autre onglet",
 
     // Leisure mode modal
     leisureModeTitle: "🎮 Temps de Loisir",

@@ -44,8 +44,9 @@ export function getTimerState() {
 
 /**
  * Save active session to localStorage for recovery
+ * @param {string} [tabId] - Optional tab ID to mark session ownership
  */
-function saveActiveSession() {
+function saveActiveSession(tabId = null) {
   if (!timerState.isRunning) return;
 
   const session = {
@@ -53,6 +54,7 @@ function saveActiveSession() {
     startTimestamp: timerState.startTimestamp,
     leisureStartMinutes: timerState.leisureStartMinutes,
     savedAt: Date.now(),
+    tabId: tabId || timerState.tabId, // Track which tab owns this session
   };
 
   try {
@@ -93,8 +95,13 @@ export function loadActiveSession() {
  * Start study timer (count-up)
  * @param {function} onTick - Callback called every second with elapsed seconds
  * @param {number} [resumeFromTimestamp] - Optional timestamp to resume from
+ * @param {string} [tabId] - Optional tab ID to mark session ownership
  */
-export function startStudyTimer(onTick, resumeFromTimestamp = null) {
+export function startStudyTimer(
+  onTick,
+  resumeFromTimestamp = null,
+  tabId = null
+) {
   // Stop any existing timer
   if (timerState.intervalId) {
     clearInterval(timerState.intervalId);
@@ -117,10 +124,11 @@ export function startStudyTimer(onTick, resumeFromTimestamp = null) {
     onComplete: null,
     startTimestamp: startTimestamp,
     leisureStartMinutes: 0,
+    tabId: tabId, // Store tab ID
   };
 
-  // Save initial session state
-  saveActiveSession();
+  // Save initial session state with tab ID
+  saveActiveSession(tabId);
 
   timerState.intervalId = setInterval(() => {
     timerState.seconds++;
@@ -129,7 +137,7 @@ export function startStudyTimer(onTick, resumeFromTimestamp = null) {
     }
     // Auto-save every 60 seconds (1 minute)
     if (timerState.seconds % 60 === 0) {
-      saveActiveSession();
+      saveActiveSession(tabId);
     }
   }, 1000);
 }
@@ -185,6 +193,7 @@ export function startLeisureTimer(
     startTimestamp: startTimestamp,
     leisureStartMinutes: leisureStartMinutes,
     minutesElapsed: minutesAlreadyElapsed,
+    tabId: null, // Will be set if needed
   };
 
   // Save initial session state

@@ -89,6 +89,59 @@ const leisureModeCancelBtn = document.getElementById("leisure-mode-cancel");
 // Session state for tracking leisure start value
 let leisureSessionStartMinutes = 0;
 
+// Tab lock state
+const TAB_ID = generateId(); // Unique ID for this tab instance
+let isTabLocked = false; // True if another tab has an active session
+
+/**
+ * Check if another tab has an active session
+ * @returns {boolean} True if another tab is active
+ */
+function isAnotherTabActive() {
+  const activeSession = loadActiveSession();
+  if (!activeSession || !activeSession.tabId) {
+    return false;
+  }
+  // If session exists and tabId is different, another tab is active
+  return activeSession.tabId !== TAB_ID;
+}
+
+/**
+ * Handle tab lock state - disable UI when another tab is active
+ */
+function handleTabLock() {
+  const anotherTabActive = isAnotherTabActive();
+
+  if (anotherTabActive && !isTabLocked) {
+    // Lock this tab
+    isTabLocked = true;
+
+    // Disable all action buttons
+    studyBtn.disabled = true;
+    leisureBtn.disabled = true;
+    loanBtn.disabled = true;
+
+    // Show message
+    timerMode.textContent =
+      t("anotherTabActive") || "⚠️ Sesión activa en otra pestaña";
+    timerMode.classList.add("text-orange-600");
+
+    console.log("Tab locked: another tab has active session");
+  } else if (!anotherTabActive && isTabLocked) {
+    // Unlock this tab
+    isTabLocked = false;
+
+    // Re-enable buttons based on state
+    const state = loadState();
+    updateBalanceDisplay(state.balance);
+    updateButtonStates(TIMER_MODES.IDLE);
+
+    timerMode.classList.remove("text-orange-600");
+
+    console.log("Tab unlocked: no active sessions in other tabs");
+  }
+}
+
 /**
  * Update all UI text with current language translations
  */
@@ -217,9 +270,25 @@ function updateButtonStates(mode) {
  * Handle study button click - start study timer
  */
 function handleStudyClick() {
-  startStudyTimer((seconds) => {
-    updateTimerDisplay(seconds);
-  });
+  // Check if another tab has active session
+  if (isAnotherTabActive()) {
+    timerMode.textContent =
+      t("anotherTabActive") || "⚠️ Sesión activa en otra pestaña";
+    timerMode.classList.add("text-orange-600");
+    setTimeout(() => {
+      timerMode.classList.remove("text-orange-600");
+      updateButtonStates(TIMER_MODES.IDLE);
+    }, 3000);
+    return;
+  }
+
+  startStudyTimer(
+    (seconds) => {
+      updateTimerDisplay(seconds);
+    },
+    null,
+    TAB_ID
+  );
   updateButtonStates(TIMER_MODES.STUDY);
 }
 
@@ -316,6 +385,18 @@ function handleLeisureClick() {
  * @param {number} minutes - Minutes to use for leisure
  */
 function startLeisureSession(minutes) {
+  // Check if another tab has active session
+  if (isAnotherTabActive()) {
+    timerMode.textContent =
+      t("anotherTabActive") || "⚠️ Sesión activa en otra pestaña";
+    timerMode.classList.add("text-orange-600");
+    setTimeout(() => {
+      timerMode.classList.remove("text-orange-600");
+      updateButtonStates(TIMER_MODES.IDLE);
+    }, 3000);
+    return;
+  }
+
   // Store the starting value for stop calculation
   leisureSessionStartMinutes = minutes;
 
@@ -924,11 +1005,19 @@ function handleHistoryClear() {
 
 /**
  * Recover and resume an active session from localStorage
+ * Only recovers if the session belongs to this tab
  * @param {Object} session - The saved session data
  */
 function recoverActiveSession(session) {
   if (!session || !session.startTimestamp || !session.mode) {
     clearActiveSession();
+    return;
+  }
+
+  // Check if this session belongs to another tab
+  if (session.tabId && session.tabId !== TAB_ID) {
+    console.log("Session belongs to another tab, locking this tab");
+    handleTabLock();
     return;
   }
 
@@ -938,9 +1027,13 @@ function recoverActiveSession(session) {
 
   if (session.mode === TIMER_MODES.STUDY) {
     // Resume study timer from saved timestamp
-    startStudyTimer((seconds) => {
-      updateTimerDisplay(seconds);
-    }, session.startTimestamp);
+    startStudyTimer(
+      (seconds) => {
+        updateTimerDisplay(seconds);
+      },
+      session.startTimestamp,
+      TAB_ID
+    );
 
     updateButtonStates(TIMER_MODES.STUDY);
     console.log(`Recovered study session: ${elapsedMinutes} minutes elapsed`);
@@ -1205,7 +1298,38 @@ function init() {
   // Add beforeunload listener to save session on page close/refresh
   window.addEventListener("beforeunload", handleBeforeUnload);
 
-  console.log("Study Time Tracker initialized");
+  // Listen for storage events from other tabs
+  window.addEventListener("storage", (event) => {
+    if (event.key === "studyTrackerActiveSession") {
+      // Another tab started/stopped a session
+      handleTabLock();
+
+      // If our session was cleared by another tab, stop current timer
+      const currentTimerState = getTimerState();
+      if (!event.newValue && currentTimerState.isRunning) {
+        console.warn("Session cleared by another tab, stopping current timer");
+        handleStopClick();
+      }
+    } else if (event.key === "studyTrackerState") {
+      // Balance or history changed in another tab, refresh display
+      const state = loadState();
+      updateBalanceDisplay(state.balance);
+      updateHistoryDisplay();
+    }
+  });
+
+  // Initial tab lock check
+  handleTabLock();
+
+  // Periodic check for tab lock (every 5 seconds)
+  setInterval(() => {
+    const currentTimerState = getTimerState();
+    if (!currentTimerState.isRunning) {
+      handleTabLock();
+    }
+  }, 5000);
+
+  console.log("Study Time Tracker initialized with Tab ID:", TAB_ID);
 }
 
 // Run on DOM ready
